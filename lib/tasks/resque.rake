@@ -48,21 +48,23 @@ namespace :resque do
 
   desc "Quit running workers"
   task :stop_workers => :environment do
-    # pids = Array.new
+    pids = Array.new
     Resque.workers.each do |worker|
       worker.shutdown!
-      # pids.concat(worker.worker_pids)
+      pids.concat(worker.worker_pids)
     end
-    # if pids.empty?
-    #   puts "No workers to kill"
-    # else
-    #   syscmd = "kill -9 #{pids.join(' ')}"
-    #   puts "Running syscmd: #{syscmd}"
-    #   begin
-    #     system(syscmd)
-    #   rescue Exception => e
-    #   end
-    # end
+    if pids.empty?
+      puts "No workers to kill"
+    else
+      # syscmd = "sudo kill -9 #{pids.join(' ')}"
+      puts "Running syscmd: #{syscmd}"
+      begin
+        pids.each do |pid|
+          system("kill -9 #{pid}")
+        end
+      rescue Exception => e
+      end
+    end
   end
 
   desc "Start workers"
