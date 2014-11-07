@@ -53,7 +53,7 @@ namespace :resque do
     if pids.empty?
       puts "No workers to kill"
     else
-      syscmd = "kill -s QUIT #{pids.join(' ')}"
+      syscmd = "kill -9 #{pids.join(' ')}"
       puts "Running syscmd: #{syscmd}"
       begin
         system(syscmd)
@@ -80,7 +80,7 @@ namespace :resque do
       puts "Scheduler not running"
     else
       pid = File.read(pidfile).to_i
-      syscmd = "kill -s QUIT #{pid}"
+      syscmd = "kill -9 #{pid}"
       puts "Running syscmd: #{syscmd}"
       begin
         system(syscmd)
@@ -103,7 +103,7 @@ namespace :resque do
       puts "Scheduler not running"
     else
       pid = File.read(pidfile).to_i
-      syscmd = "kill -s USR2 #{pid}"
+      syscmd = "kill -9 #{pid}"
       puts "Running syscmd: #{syscmd}"
       begin
         system(syscmd)
