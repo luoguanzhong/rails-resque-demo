@@ -23,7 +23,7 @@ def run_scheduler
   puts "Starting resque scheduler"
   env_vars = {
     "BACKGROUND" => "1",
-    "PIDFILE" => (Rails.root + "tmp/pids/resque_scheduler.pid").to_s,
+    "PIDFILE" => ("/tmp/pids/resque_scheduler.pid").to_s,
     "VERBOSE" => "1"
   }
   ops = {
@@ -37,8 +37,7 @@ end
 
 namespace :resque do
   task :setup => :environment do
-    #ActiveRecord::StatementInvalid. PG Error, http://stackoverflow.com/questions/10170807/activerecordstatementinvalid-pg-error
-    #Resque.before_fork = Proc.new { ActiveRecord::Base.establish_connection }
+    Resque.before_fork = Proc.new { ActiveRecord::Base.establish_connection }
   end
 
   desc "Restart running workers"
@@ -49,20 +48,21 @@ namespace :resque do
 
   desc "Quit running workers"
   task :stop_workers => :environment do
-    pids = Array.new
+    # pids = Array.new
     Resque.workers.each do |worker|
-      pids.concat(worker.worker_pids)
+      worker.shutdown!
+      # pids.concat(worker.worker_pids)
     end
-    if pids.empty?
-      puts "No workers to kill"
-    else
-      syscmd = "kill -9 #{pids.join(' ')}"
-      puts "Running syscmd: #{syscmd}"
-      begin
-        system(syscmd)
-      rescue Exception => e
-      end
-    end
+    # if pids.empty?
+    #   puts "No workers to kill"
+    # else
+    #   syscmd = "kill -9 #{pids.join(' ')}"
+    #   puts "Running syscmd: #{syscmd}"
+    #   begin
+    #     system(syscmd)
+    #   rescue Exception => e
+    #   end
+    # end
   end
 
   desc "Start workers"
@@ -78,7 +78,7 @@ namespace :resque do
 
   desc "Quit scheduler"
   task :stop_scheduler => :environment do
-    pidfile = Rails.root + "tmp/pids/resque_scheduler.pid"
+    pidfile = "/tmp/pids/resque_scheduler.pid"
     if !File.exists?(pidfile)
       puts "Scheduler not running"
     else
@@ -96,22 +96,5 @@ namespace :resque do
   desc "Start scheduler"
   task :start_scheduler => :environment do
     run_scheduler
-  end
-
-  desc "Reload schedule"
-  task :reload_schedule => :environment do
-    pidfile = Rails.root + "tmp/pids/resque_scheduler.pid"
-
-    if !File.exists?(pidfile)
-      puts "Scheduler not running"
-    else
-      pid = File.read(pidfile).to_i
-      syscmd = "kill -9 #{pid}"
-      puts "Running syscmd: #{syscmd}"
-      begin
-        system(syscmd)
-      rescue Exception => e
-      end
-    end
   end
 end
