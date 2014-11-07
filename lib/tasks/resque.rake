@@ -36,7 +36,10 @@ def run_scheduler
 end
 
 namespace :resque do
-  task :setup => :environment
+  task :setup => :environment do
+    #ActiveRecord::StatementInvalid. PG Error, http://stackoverflow.com/questions/10170807/activerecordstatementinvalid-pg-error
+    #Resque.before_fork = Proc.new { ActiveRecord::Base.establish_connection }
+  end
 
   desc "Restart running workers"
   task :restart_workers => :environment do
@@ -57,7 +60,7 @@ namespace :resque do
       puts "Running syscmd: #{syscmd}"
       begin
         system(syscmd)
-      rescue SignalException => e
+      rescue Exception => e
       end
     end
   end
@@ -84,7 +87,7 @@ namespace :resque do
       puts "Running syscmd: #{syscmd}"
       begin
         system(syscmd)
-      rescue SignalException => e
+      rescue Exception => e
       end
       FileUtils.rm_f(pidfile)
     end
@@ -107,7 +110,7 @@ namespace :resque do
       puts "Running syscmd: #{syscmd}"
       begin
         system(syscmd)
-      rescue SignalException => e
+      rescue Exception => e
       end
     end
   end
