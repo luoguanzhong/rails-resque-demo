@@ -57,7 +57,7 @@ namespace :resque do
       puts "No workers to kill"
     else
       # syscmd = "sudo kill -9 #{pids.join(' ')}"
-      puts "Running syscmd: #{syscmd}"
+      # puts "Running syscmd: #{syscmd}"
       begin
         pids.each do |pid|
           system("kill -9 #{pid}")
