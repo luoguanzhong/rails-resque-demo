@@ -23,7 +23,7 @@ def run_scheduler
   puts "Starting resque scheduler"
   env_vars = {
     "BACKGROUND" => "1",
-    "PIDFILE" => ("/tmp/pids/resque_scheduler.pid").to_s,
+    "PIDFILE" => (Rails.root + "tmp/pids/resque_scheduler.pid").to_s,
     "VERBOSE" => "1"
   }
   ops = {
@@ -37,7 +37,33 @@ end
 
 namespace :resque do
   task :setup => :environment do
-    Resque.before_fork = Proc.new { ActiveRecord::Base.establish_connection }
+  end
+
+  # task :stop_all => :environment do
+  #   system "ps aux | grep -ie resque | awk '{print $2}' | xargs kill -9"
+  # end
+
+  desc "Start workers"
+  task :start_workers => :environment do
+    run_worker("*", 1)
+  end
+
+  desc "Quit running workers"
+  task :stop_workers => :environment do
+    pids = Array.new
+    Resque.workers.each do |worker|
+      pids.concat(worker.worker_pids)
+    end
+    if pids.empty?
+      puts "No workers to kill"
+    else
+      syscmd = "kill -s QUIT #{pids.join(' ')}"
+      puts "Running syscmd: #{syscmd}"
+      begin
+        system(syscmd)
+      rescue SignalException => e
+      end
+    end
   end
 
   desc "Restart running workers"
@@ -46,41 +72,9 @@ namespace :resque do
     Rake::Task['resque:start_workers'].invoke
   end
 
-  desc "Quit running workers"
-  task :stop_workers => :environment do
-    pids = Array.new
-    Resque.workers.each do |worker|
-      worker.shutdown!
-      pids.concat(worker.worker_pids)
-    end
-    if pids.empty?
-      puts "No workers to kill"
-    else
-      # syscmd = "sudo kill -9 #{pids.join(' ')}"
-      # puts "Running syscmd: #{syscmd}"
-      begin
-        pids.each do |pid|
-          system("kill -9 #{pid}")
-        end
-      rescue Exception => e
-      end
-    end
-  end
-
-  desc "Start workers"
-  task :start_workers => :environment do
-    run_worker("*", 1)
-  end
-
-  desc "Restart scheduler"
-  task :restart_scheduler => :environment do
-    Rake::Task['resque:stop_scheduler'].invoke
-    Rake::Task['resque:start_scheduler'].invoke
-  end
-
   desc "Quit scheduler"
   task :stop_scheduler => :environment do
-    pidfile = "/tmp/pids/resque_scheduler.pid"
+    pidfile = Rails.root + "tmp/pids/resque_scheduler.pid"
     if !File.exists?(pidfile)
       puts "Scheduler not running"
     else
@@ -89,7 +83,7 @@ namespace :resque do
       puts "Running syscmd: #{syscmd}"
       begin
         system(syscmd)
-      rescue Exception => e
+      rescue => e
       end
       FileUtils.rm_f(pidfile)
     end
@@ -98,5 +92,11 @@ namespace :resque do
   desc "Start scheduler"
   task :start_scheduler => :environment do
     run_scheduler
+  end
+
+  desc "Restart running scheduler"
+  task :restart_scheduler => :environment do
+    Rake::Task['resque:stop_scheduler'].invoke
+    Rake::Task['resque:start_scheduler'].invoke
   end
 end
