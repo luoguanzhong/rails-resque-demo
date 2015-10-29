@@ -37,8 +37,6 @@ gem 'jquery-rails'
 # To use debugger
 # gem 'debugger'
 
-gem 'redis'
-
-gem 'resque', '~> 1.25.2', :require => 'resque/server'
-
+gem 'resque', '~> 1.25.2'#, :require => 'resque/server'
 gem 'resque-scheduler', '~> 3.0.0'
+gem 'resque-pool', '~> 0.6.0'

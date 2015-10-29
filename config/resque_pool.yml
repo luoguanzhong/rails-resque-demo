@@ -1,0 +1,11 @@
+# Queue name, I name the queue by frequency.
+
+high: 0
+medium: 3
+low: 2
+
+production:
+  hight: 4
+
+staging:
+  hight: 4

@@ -1,6 +1,4 @@
 do_some_job:
   cron: 0 0 0/1 * *
   class: DemoJob
-  queue: some_job
-  args:
   description: do job description

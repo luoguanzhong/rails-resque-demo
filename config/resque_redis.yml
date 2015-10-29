@@ -1,0 +1,15 @@
+development:
+  redis_url: <%= ENV['Demo_REDIS_URL'] %>
+  redis_namespace: Demo-Jobs-Dev
+
+test:
+  redis_url: <%= ENV['Demo_REDIS_URL'] %>
+  redis_namespace: Demo-Jobs-Test
+
+staging:
+  redis_url: <%= ENV['Demo_REDIS_URL'] %>
+  redis_namespace: Demo-Jobs-Stag
+
+production:
+  redis_url: <%= ENV['Demo_REDIS_URL'] %>
+  redis_namespace: Demo-Jobs-Prod
